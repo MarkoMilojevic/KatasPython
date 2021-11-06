@@ -1,18 +1,20 @@
 from __future__ import annotations
 from datetime import datetime
+from collections import namedtuple
+
+Transaction = namedtuple("Transaction", "timestamp, amount, balance")
 
 
 class Account:
     def __init__(self: Account) -> None:
-        # List of tuples (timestamp, amount, balance)
-        self._transactions: tuple[datetime, int, int] = []
+        self._transactions: list[Transaction] = []
 
     def deposit(self: Account, amount: int) -> None:
         if amount <= 0:
             raise ValueError("Deposited amount must be a positive value.")
 
         balance: int = self._balance()
-        self._transactions.append((datetime.now(), amount, balance + amount))
+        self._transactions.append(Transaction(datetime.now(), amount, balance + amount))
 
     def withdraw(self: Account, amount: int) -> None:
         if amount <= 0:
@@ -23,10 +25,12 @@ class Account:
         if amount > balance:
             raise ValueError("Not enough funds on your account.")
 
-        self._transactions.append((datetime.now(), -amount, balance - amount))
+        self._transactions.append(
+            Transaction(datetime.now(), -amount, balance - amount)
+        )
 
     def _balance(self: Account) -> int:
-        return sum([amount for _, amount, _ in self._transactions])
+        return sum(map(lambda transaction: transaction.amount, self._transactions))
 
     def print_statement(self: Account) -> None:
         print(f"{'Date':<13}{'Amount':<9}{'Balance':<9}")
